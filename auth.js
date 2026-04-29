@@ -34,6 +34,28 @@ function showForm(name) {
   showMessage("");
 }
 
+function isAllowedEmail(email) {
+  const allowedDomains = [
+    "gmail.com",
+    "hotmail.com",
+    "outlook.com",
+    "icloud.com",
+    "yahoo.com"
+  ];
+
+  const cleanEmail = email.toLowerCase().trim();
+  const parts = cleanEmail.split("@");
+
+  if (parts.length !== 2) return false;
+
+  const name = parts[0];
+  const domain = parts[1];
+
+  if (!name || !domain) return false;
+
+  return allowedDomains.includes(domain);
+}
+
 tabs.forEach(tab => {
   tab.addEventListener("click", () => {
     showForm(tab.dataset.tab);
@@ -72,18 +94,34 @@ document.querySelectorAll(".toggle-pass").forEach(btn => {
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("loginEmail").value.trim();
+  const username = document.getElementById("loginUsername").value.trim().toLowerCase();
   const password = document.getElementById("loginPassword").value;
+
+  if (!username || !password) {
+    showMessage("Please enter your username and password.", "error");
+    return;
+  }
 
   showMessage("Signing in...");
 
+  const { data: profile, error: profileError } = await client
+    .from("profiles")
+    .select("email")
+    .eq("username", username)
+    .single();
+
+  if (profileError || !profile) {
+    showMessage("Username not found.", "error");
+    return;
+  }
+
   const { error } = await client.auth.signInWithPassword({
-    email,
+    email: profile.email,
     password
   });
 
   if (error) {
-    showMessage(error.message, "error");
+    showMessage("Invalid username or password.", "error");
     return;
   }
 
@@ -98,7 +136,7 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
   e.preventDefault();
 
   const username = document.getElementById("regUsername").value.trim().toLowerCase();
-  const email = document.getElementById("regEmail").value.trim();
+  const email = document.getElementById("regEmail").value.trim().toLowerCase();
   const password = document.getElementById("regPassword").value;
   const confirmPassword = document.getElementById("regConfirmPassword").value;
   const phone = document.getElementById("regPhone").value.trim();
@@ -113,6 +151,11 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     return;
   }
 
+  if (!isAllowedEmail(email)) {
+    showMessage("Please use a valid email address: Gmail, Outlook, Hotmail, iCloud or Yahoo.", "error");
+    return;
+  }
+
   if (password.length < 8) {
     showMessage("Password must be at least 8 characters.", "error");
     return;
@@ -123,9 +166,22 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     return;
   }
 
+  showMessage("Checking username...");
+
+  const { data: existingUsername } = await client
+    .from("profiles")
+    .select("username")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (existingUsername) {
+    showMessage("This username is already taken.", "error");
+    return;
+  }
+
   showMessage("Creating account...");
 
-  const { error } = await client.auth.signUp({
+  const { data: signUpData, error: signUpError } = await client.auth.signUp({
     email,
     password,
     options: {
@@ -136,8 +192,29 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     }
   });
 
-  if (error) {
-    showMessage(error.message, "error");
+  if (signUpError) {
+    showMessage(signUpError.message, "error");
+    return;
+  }
+
+  if (!signUpData.user) {
+    showMessage("Account could not be created.", "error");
+    return;
+  }
+
+  const { error: profileInsertError } = await client
+    .from("profiles")
+    .insert([
+      {
+        id: signUpData.user.id,
+        username,
+        email,
+        phone: phone || null
+      }
+    ]);
+
+  if (profileInsertError) {
+    showMessage(profileInsertError.message, "error");
     return;
   }
 
@@ -148,7 +225,12 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
 document.getElementById("forgotForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("forgotEmail").value.trim();
+  const email = document.getElementById("forgotEmail").value.trim().toLowerCase();
+
+  if (!isAllowedEmail(email)) {
+    showMessage("Please enter a valid email address.", "error");
+    return;
+  }
 
   showMessage("Sending reset link...");
 

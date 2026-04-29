@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmmGok - Global SMM Panel</title>
+  <link rel="stylesheet" href="auth.css" />
+</head>
+<body>
+
+<header class="navbar">
+  <div class="nav-inner">
+    <a href="/" class="brand">
+      <img src="images/logo.png" alt="SmmGok Logo" />
+    </a>
+
+    <nav class="nav-links">
+      <a href="#signin">Sign In</a>
+      <a href="#services">Services</a>
+      <a href="#api">API</a>
+      <a href="#" id="openRegister">Sign Up</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="hero">
+  <section class="hero-text">
+    <h1><span>SMM Panel</span> - A Reliable Global Social Media Growth Panel!</h1>
+    <p>SmmGok makes it easy to grow your brand, increase engagement, and reach real audiences worldwide.</p>
+    <p>Fast delivery, affordable pricing, secure accounts and a smooth experience for creators, agencies and online businesses.</p>
+  </section>
+
+  <section class="auth-card" id="signin">
+    <div class="tabs">
+      <button class="tab active" data-tab="login">Sign In</button>
+      <button class="tab" data-tab="register">Create Account</button>
+    </div>
+
+    <form id="loginForm" class="auth-form active">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com" required />
+
+      <label>Password</label>
+      <div class="password-wrap">
+        <input type="password" id="loginPassword" placeholder="Your password" required />
+        <button type="button" class="toggle-pass" data-target="loginPassword">Show</button>
+      </div>
+
+      <a href="#" class="forgot-link" id="openForgot">Forgot Password?</a>
+      <button type="submit" class="primary-btn">Sign In</button>
+
+      <p class="switch-text">
+        Don’t have an account?
+        <a href="#" id="switchRegister">Create Account</a>
+      </p>
+    </form>
+
+    <form id="registerForm" class="auth-form">
+      <label>Username</label>
+      <input type="text" id="regUsername" placeholder="Choose a username" required />
+
+      <label>Email Address</label>
+      <input type="email" id="regEmail" placeholder="you@example.com" required />
+
+      <label>Password</label>
+      <div class="password-wrap">
+        <input type="password" id="regPassword" placeholder="Minimum 8 characters" required />
+        <button type="button" class="toggle-pass" data-target="regPassword">Show</button>
+      </div>
+
+      <label>Confirm Password</label>
+      <input type="password" id="regConfirmPassword" placeholder="Repeat password" required />
+
+      <label>Phone Number <span>(Optional)</span></label>
+      <input type="tel" id="regPhone" placeholder="+1 555 000 0000" />
+
+      <button type="submit" class="primary-btn">Create Account</button>
+    </form>
+
+    <form id="forgotForm" class="auth-form">
+      <h3>Reset Password</h3>
+      <p class="small-text">Enter your email and we’ll send you a reset link.</p>
+
+      <label>Email Address</label>
+      <input type="email" id="forgotEmail" placeholder="you@example.com" required />
+
+      <button type="submit" class="primary-btn">Send Reset Link</button>
+      <a href="#" class="forgot-link" id="backLogin">Back to Sign In</a>
+    </form>
+
+    <div id="authMessage" class="message"></div>
+  </section>
+</main>
+
+<section class="info-section" id="services">
+  <h2>Why Choose <span>SmmGok?</span></h2>
+
+  <div class="cards">
+    <div class="info-card">
+      <h3>Fast Delivery</h3>
+      <p>Orders are processed quickly with a smooth and reliable system.</p>
+    </div>
+
+    <div class="info-card">
+      <h3>Global Services</h3>
+      <p>Built for users worldwide with flexible service options.</p>
+    </div>
+
+    <div class="info-card">
+      <h3>Affordable Pricing</h3>
+      <p>High-quality services with competitive prices for every budget.</p>
+    </div>
+
+    <div class="info-card">
+      <h3>Secure Account</h3>
+      <p>Email login, password reset and protected user data with Supabase.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer" id="contact">
+  <p>© 2026 SmmGok. All rights reserved.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+</body>
+</html>

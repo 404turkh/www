@@ -13,53 +13,25 @@ function showMessage(text, type = "") {
 }
 
 function showForm(name) {
-  tabs.forEach(tab => {
-    tab.classList.toggle("active", tab.dataset.tab === name);
-  });
-
+  tabs.forEach(tab => tab.classList.toggle("active", tab.dataset.tab === name));
   forms.forEach(form => form.classList.remove("active"));
 
-  if (name === "login") {
-    document.getElementById("loginForm").classList.add("active");
-  }
-
-  if (name === "register") {
-    document.getElementById("registerForm").classList.add("active");
-  }
-
-  if (name === "forgot") {
-    document.getElementById("forgotForm").classList.add("active");
-  }
+  if (name === "login") document.getElementById("loginForm").classList.add("active");
+  if (name === "register") document.getElementById("registerForm").classList.add("active");
+  if (name === "forgot") document.getElementById("forgotForm").classList.add("active");
 
   showMessage("");
 }
 
 function isAllowedEmail(email) {
-  const allowedDomains = [
-    "gmail.com",
-    "hotmail.com",
-    "outlook.com",
-    "icloud.com",
-    "yahoo.com"
-  ];
-
-  const cleanEmail = email.toLowerCase().trim();
-  const parts = cleanEmail.split("@");
-
+  const allowedDomains = ["gmail.com", "hotmail.com", "outlook.com", "icloud.com", "yahoo.com"];
+  const parts = email.toLowerCase().trim().split("@");
   if (parts.length !== 2) return false;
-
-  const name = parts[0];
-  const domain = parts[1];
-
-  if (!name || !domain) return false;
-
-  return allowedDomains.includes(domain);
+  return allowedDomains.includes(parts[1]);
 }
 
 tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    showForm(tab.dataset.tab);
-  });
+  tab.addEventListener("click", () => showForm(tab.dataset.tab));
 });
 
 document.getElementById("switchRegister").addEventListener("click", (e) => {
@@ -104,19 +76,17 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
   showMessage("Signing in...");
 
-  const { data: profile, error: profileError } = await client
-    .from("profiles")
-    .select("email")
-    .eq("username", username)
-    .single();
+  const { data: email, error: usernameError } = await client.rpc("get_email_by_username", {
+    p_username: username
+  });
 
-  if (profileError || !profile) {
+  if (usernameError || !email) {
     showMessage("Username not found.", "error");
     return;
   }
 
   const { error } = await client.auth.signInWithPassword({
-    email: profile.email,
+    email,
     password
   });
 
@@ -152,7 +122,7 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
   }
 
   if (!isAllowedEmail(email)) {
-    showMessage("Please use a valid email address: Gmail, Outlook, Hotmail, iCloud or Yahoo.", "error");
+    showMessage("Please use Gmail, Outlook, Hotmail, iCloud or Yahoo.", "error");
     return;
   }
 
@@ -166,22 +136,9 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     return;
   }
 
-  showMessage("Checking username...");
-
-  const { data: existingUsername } = await client
-    .from("profiles")
-    .select("username")
-    .eq("username", username)
-    .maybeSingle();
-
-  if (existingUsername) {
-    showMessage("This username is already taken.", "error");
-    return;
-  }
-
   showMessage("Creating account...");
 
-  const { data: signUpData, error: signUpError } = await client.auth.signUp({
+  const { error } = await client.auth.signUp({
     email,
     password,
     options: {
@@ -192,29 +149,8 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     }
   });
 
-  if (signUpError) {
-    showMessage(signUpError.message, "error");
-    return;
-  }
-
-  if (!signUpData.user) {
-    showMessage("Account could not be created.", "error");
-    return;
-  }
-
-  const { error: profileInsertError } = await client
-    .from("profiles")
-    .insert([
-      {
-        id: signUpData.user.id,
-        username,
-        email,
-        phone: phone || null
-      }
-    ]);
-
-  if (profileInsertError) {
-    showMessage(profileInsertError.message, "error");
+  if (error) {
+    showMessage(error.message, "error");
     return;
   }
 
